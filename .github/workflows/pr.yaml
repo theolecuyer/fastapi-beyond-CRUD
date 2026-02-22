@@ -1,0 +1,32 @@
+name: Check Conventional Commits
+
+on:
+    pull_request:
+        types: [opened]
+
+jobs:
+    check-conventional-pr:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - uses: webiny/action-conventional-commits@v1.3.1
+
+            - name: Close PR if check failed
+              if: failure()
+              run: |
+                  gh pr close ${{ github.event.pull_request.number }} --comment "PR closed: commit messages do not follow Conventional Commits."
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Send email notification
+              if: failure()
+              uses: dawidd6/action-send-mail@v3
+              with:
+                  server_address: smtp.ethereal.email
+                  server_port: 587
+                  username: ${{ secrets.ETHEREAL_USER }}
+                  password: ${{ secrets.ETHEREAL_PASS }}
+                  subject: "PR Rejected: Conventional Commits Check Failed"
+                  to: megane.auer10@ethereal.email
+                  from: megane.auer10@ethereal.email
+                  body: "PR #${{ github.event.pull_request.number }} was closed for not following Conventional Commits."

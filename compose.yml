@@ -1,76 +1,86 @@
 services:
-  web:
-    build: .
-    volumes:
-      - .:/app
-    environment: 
-      DATABASE_URL: ${DATABASE_URL}
-      JWT_SECRET: ${JWT_SECRET}
-      JWT_ALGORITHM: ${JWT_ALGORITHM}
-      MAIL_USERNAME: ${MAIL_USERNAME}
-      MAIL_PASSWORD: ${MAIL_PASSWORD}
-      MAIL_SERVER: ${MAIL_SERVER}
-      MAIL_PORT: ${MAIL_PORT}
-      MAIL_FROM: ${MAIL_FROM}
-      MAIL_FROM_NAME: ${MAIL_FROM_NAME}
-      DOMAIN: ${DOMAIN}
-      REDIS_URL: ${REDIS_URL}
+    web:
+        build: .
+        volumes:
+            - .:/app
+        environment:
+            DATABASE_URL: postgresql+asyncpg://postgres:postgres@db:5432/fastapi_db
+            JWT_SECRET: supersecret
+            JWT_ALGORITHM: HS256
+            MAIL_USERNAME: test
+            MAIL_PASSWORD: test
+            MAIL_SERVER: mailhog
+            MAIL_PORT: 1025
+            MAIL_FROM: test@example.com
+            MAIL_FROM_NAME: Test
+            DOMAIN: localhost
+            REDIS_URL: redis://redis:6379/0
 
-    ports:
-      - "8000:8000"
+        ports:
+            - "8000:8000"
 
-    depends_on:
-      - db
-      - redis
+        depends_on:
+            - db
+            - redis
 
-    networks:
-      - app-network
+        networks:
+            - app-network
 
-  db:
-    image: postgres:15
+    db:
+        image: postgres:15
 
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+        environment:
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: postgres
+            POSTGRES_DB: fastapi_db
 
-    ports:
-     - "5432:5432"
+        ports:
+            - "5432:5432"
 
-    volumes:
-      - db-data:/var/lib/postgresql/data
+        volumes:
+            - db-data:/var/lib/postgresql/data
 
-    networks:
-      - app-network
-  redis:
-    image: redis:6
+        networks:
+            - app-network
+    redis:
+        image: redis:6
 
-    ports:
-     - "6379:6379"
+        ports:
+            - "6379:6379"
 
-    networks:
-     - app-network
+        networks:
+            - app-network
 
-  celery:
-    build: .
+    celery:
+        build: .
 
-    command: celery -A src.celery_tasks.c_app worker --loglevel=INFO
+        command: celery -A src.celery_tasks.c_app worker --loglevel=INFO
 
-    volumes:
-      - .:/app
+        volumes:
+            - .:/app
 
-    depends_on:
-      - redis
+        depends_on:
+            - redis
 
-    environment:
-      REDIS_URL: ${REDIS_URL}
+        environment:
+            DATABASE_URL: postgresql+asyncpg://postgres:postgres@db:5432/fastapi_db
+            JWT_SECRET: supersecret
+            JWT_ALGORITHM: HS256
+            MAIL_USERNAME: test
+            MAIL_PASSWORD: test
+            MAIL_SERVER: mailhog
+            MAIL_PORT: 1025
+            MAIL_FROM: test@example.com
+            MAIL_FROM_NAME: Test
+            DOMAIN: localhost
+            REDIS_URL: redis://redis:6379/0
 
-    networks:
-      - app-network
+        networks:
+            - app-network
 
 volumes:
-  db-data:
+    db-data:
 
 networks:
-  app-network:
-    driver: bridge
+    app-network:
+        driver: bridge
