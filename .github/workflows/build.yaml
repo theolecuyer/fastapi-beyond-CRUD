@@ -68,7 +68,7 @@ jobs:
                   REDIS_URL: redis://localhost:6379/0
               run: python -m pytest
 
-            - name: Send failure email
+            - name: Send test failure email
               if: failure()
               uses: dawidd6/action-send-mail@v3
               with:
@@ -99,3 +99,16 @@ jobs:
                   context: .
                   push: true
                   tags: ${{ secrets.DOCKER_HUB_USERNAME }}/fastapi-beyond-crud:latest
+
+            - name: Send container image failure email
+              if: failure()
+              uses: dawidd6/action-send-mail@v3
+              with:
+                  server_address: smtp.ethereal.email
+                  server_port: 587
+                  username: ${{ secrets.ETHEREAL_USER }}
+                  password: ${{ secrets.ETHEREAL_PASS }}
+                  subject: "Nightly Build Failed - Docker Push Error"
+                  to: megane.auer10@ethereal.email
+                  from: megane.auer10@ethereal.email
+                  body: "Nightly build failed. Tests passed but the Docker image could not be pushed to the registry."
