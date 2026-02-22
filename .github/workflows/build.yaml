@@ -76,7 +76,7 @@ jobs:
                   server_port: 587
                   username: ${{ secrets.ETHEREAL_USER }}
                   password: ${{ secrets.ETHEREAL_PASS }}
-                  subject: "Nightly Build Failed"
+                  subject: "Nightly Build Failed - Tests Did Not Pass"
                   to: megane.auer10@ethereal.email
                   from: megane.auer10@ethereal.email
                   body: "Nightly build failed. Tests did not pass and image was not pushed."
